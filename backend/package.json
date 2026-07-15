@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "A backend for a messaging app called Banter Tracker",
+  "keywords": [
+    "BanterTracker"
+  ],
+  "homepage": "https://github.com/TanishKhatri/BanterTracker#readme",
+  "bugs": {
+    "url": "https://github.com/TanishKhatri/BanterTracker/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TanishKhatri/BanterTracker.git"
+  },
+  "license": "ISC",
+  "author": "Tanish Khatri",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.32.0",
+    "prettier": "^3.9.5"
+  }
+}
