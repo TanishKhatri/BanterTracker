@@ -26,6 +26,7 @@ export default [
     rules: {
       "prettier/prettier": "error",
       "no-unused-vars": "warn",
+      "singleQuote": true,
       "no-console": "off",
       "no-debugger": "warn",
       "eqeqeq": "error",
