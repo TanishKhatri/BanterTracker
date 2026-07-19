@@ -1,6 +1,7 @@
 import express from 'express'
 import mongoose from "mongoose";
 import usersRouter from './controllers/users.js';
+import loginRouter from './controllers/login.js';
 import config from './utils/config.js';
 import logger from './utils/logger.js';
 const app = express();
@@ -15,5 +16,6 @@ mongoose
 
 app.use(express.json());
 app.use('/api/users', usersRouter);
+app.use('/api/login', loginRouter);
 
 export default app;
