@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 
+// Stores the user Info like username, name, password, will store profile photo url in future maybe.
 const userSchema = new mongoose.Schema(
   {
     username: {

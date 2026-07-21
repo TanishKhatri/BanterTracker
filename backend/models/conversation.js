@@ -1,7 +1,12 @@
 import mongoose from 'mongoose';
 
+// Each conversation is a mongoObject
+// A single group chat and or direct messaging person to person
 const conversationSchema = new mongoose.Schema(
   {
+    // Store who can participate in this chat
+    // Conversation name has not been specified because we will be using the created mongo ID as the room name for the conversation
+    // in socket
     participants: {
       type: [
         {
@@ -11,6 +16,8 @@ const conversationSchema = new mongoose.Schema(
         },
       ],
     },
+
+    // For showing the last message in the messages panel where you see all conversations
     lastMessage: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Message',
