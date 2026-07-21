@@ -2,7 +2,7 @@
 // - Uses a Post request to /api/login with username and password to give a jwt token
 
 import express from 'express';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 import config from '../utils/config.js';
@@ -23,15 +23,18 @@ loginRouter.post('/', async (req, res) => {
 
   const forUserToken = {
     username: user.username,
-    id: user._id
-  }
-  
-  // JWT returns forUserToken on verification so we are giving it the 
+    id: user._id,
+  };
+
+  // JWT returns forUserToken on verification so we are giving it the
   // two identifiable pieces of info for the user
   const token = jwt.sign(forUserToken, config.JWT_SECRET, { expiresIn: 3600 });
   return res.status(200).send({
-    token, username: user.username, name: user.name, id: user._id,
-  })
+    token,
+    username: user.username,
+    name: user.name,
+    id: user._id,
+  });
 });
 
 export default loginRouter;

@@ -2,7 +2,7 @@
 // - currently only does create operation via a post request with, username, name, password
 
 import express from 'express';
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcrypt';
 import User from '../models/user.js';
 
 const usersRouter = express.Router();
@@ -22,13 +22,13 @@ usersRouter.post('/', async (req, res) => {
   }
 
   const saltRounds = 10;
-  const passwordHash = await bcrypt.hash(body.password, saltRounds)
+  const passwordHash = await bcrypt.hash(body.password, saltRounds);
 
   const newUser = new User({
     username: body.username,
     name: body.name || body.username,
     passwordHash,
-  })
+  });
 
   // Sent 201 for creating the user
   await newUser.save();

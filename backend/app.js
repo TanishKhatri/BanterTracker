@@ -1,5 +1,5 @@
-import express from 'express'
-import mongoose from "mongoose";
+import express from 'express';
+import mongoose from 'mongoose';
 import usersRouter from './controllers/users.js';
 import loginRouter from './controllers/login.js';
 import config from './utils/config.js';
@@ -11,11 +11,11 @@ const app = express();
 mongoose
   .connect(config.MONGODB_URI, { family: 4 })
   .then(() => {
-    logger.info("Mongo db connected");
+    logger.info('Mongo db connected');
   })
   .catch(() => {
-    logger.error("Mongo db failed to connect");
-  })
+    logger.error('Mongo db failed to connect');
+  });
 
 //Parse incoming JSON into req.body
 app.use(express.json());
