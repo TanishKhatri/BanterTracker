@@ -15,6 +15,10 @@ const conversationSchema = new mongoose.Schema(
           required: true,
         },
       ],
+      validate: {
+        validator: arr => arr.length >= 2,
+        message: 'A conversation must have atleast two participants'
+      }
     },
 
     // For showing the last message in the messages panel where you see all conversations
