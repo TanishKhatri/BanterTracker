@@ -37,4 +37,7 @@ io.on('connection', (socket) => {
   console.log('a user connected');
 });
 
+app.use(middleware.unknownEndpoint);
+app.use(middleware.errorHandler);
+
 export default server;
