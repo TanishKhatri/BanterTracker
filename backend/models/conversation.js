@@ -7,6 +7,15 @@ const conversationSchema = new mongoose.Schema(
     // Store who can participate in this chat
     // Conversation name has not been specified because we will be using the created mongo ID as the room name for the conversation
     // in socket
+    title: {
+      type: String,
+      required: [
+        function () {
+          return this.participants.length > 2;
+        },
+        'Title is required for groups of 3 or more',
+      ],
+    },
     participants: {
       type: [
         {
@@ -16,9 +25,9 @@ const conversationSchema = new mongoose.Schema(
         },
       ],
       validate: {
-        validator: arr => arr.length >= 2,
-        message: 'A conversation must have atleast two participants'
-      }
+        validator: (arr) => arr.length >= 2,
+        message: 'A conversation must have atleast two participants',
+      },
     },
 
     // For showing the last message in the messages panel where you see all conversations

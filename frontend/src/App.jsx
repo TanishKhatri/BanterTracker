@@ -1,26 +1,18 @@
-import LoginForm from "./components/LoginForm";
-import services from "./services/services";
-import { io } from "socket.io-client";
+import { useState } from 'react';
+import { Routes, Route, Link, useNavigate } from 'react-router';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginForm from './components/LoginForm';
+import MainAppPage from './components/MainAppPage';
 
 const App = () => {
-  const [user, setUser] = useState(null)
-
-  const handleLogin = async (credentials) => {
-    try {
-      const res = await services.login(credentials);
-      setUser(res);
-      services.setToken(res.token);
-      console.log(`Token set: ${res.token}`);
-    } catch {
-      console.log('error occured');
-    }
-  }
-
   return (
-    <div>
-      <h1>Login Form</h1>
-      <LoginForm handleLogin={handleLogin} />
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginForm />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<MainAppPage />} />
+      </Route>
+    </Routes>
   );
 };
 

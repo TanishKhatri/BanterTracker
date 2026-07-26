@@ -78,18 +78,21 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
   const userData = await User.find({});
   const conversations = [
     {
+      title: 'Project Team',
       participants: [userData[0]._id, userData[1]._id, userData[2]._id],
     },
     {
       participants: [userData[3]._id, userData[4]._id],
     },
     {
+      title: 'Development Squad',
       participants: [userData[5]._id, userData[6]._id, userData[7]._id, userData[8]._id],
     },
     {
       participants: [userData[9]._id, userData[0]._id],
     },
     {
+      title: 'Leadership Group',
       participants: [
         userData[1]._id,
         userData[3]._id,
@@ -99,9 +102,11 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
       ],
     },
     {
+      title: 'Study Group',
       participants: [userData[2]._id, userData[4]._id, userData[6]._id],
     },
     {
+      title: 'Weekend Crew',
       participants: [
         userData[8]._id,
         userData[9]._id,
@@ -115,9 +120,11 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
       participants: [userData[5]._id, userData[2]._id],
     },
     {
+      title: 'Gaming Party',
       participants: [userData[6]._id, userData[8]._id, userData[3]._id, userData[0]._id],
     },
     {
+      title: 'All Hands',
       participants: [
         userData[0]._id,
         userData[2]._id,

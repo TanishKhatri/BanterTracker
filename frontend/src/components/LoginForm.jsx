@@ -1,12 +1,24 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { useAuth } from './AuthContext';
+import services from '../services/services';
 
 const LoginForm = ({ handleLogin }) => {
   const [ username, setUsername ] = useState('');
   const [ password, setPassword ] = useState('');
 
-  const handleSubmit = (event) => {
+  const { token, login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    handleLogin({ username, password });
+    try {
+      const res = await services.login({ username, password });
+      login(res);
+      navigate('/');
+    } catch {
+      console.log('error occured');
+    }
   }
 
   return (
