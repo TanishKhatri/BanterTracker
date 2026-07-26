@@ -73,9 +73,7 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
     return newUser.save();
   });
 
-  await Promise.all(userPromises);
-
-  const userData = await User.find({});
+  const userData = await Promise.all(userPromises);
   const conversations = [
     {
       title: 'Project Team',
@@ -138,79 +136,45 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
   ];
   await Conversation.insertMany(conversations);
 
+  const randomParticipant = (conversation) => {
+    return conversation.participants[Math.floor(Math.random() * conversation.participants.length)];
+  };
+
   const convoData = await Conversation.find({});
-  const messages = [
-    {
-      conversation: convoData[0]._id,
-      sender: userData[0]._id,
-      content: 'Hey everyone! Hope you are all doing well.',
-      delivered: true,
-      read: false,
-    },
-    {
-      conversation: convoData[1]._id,
-      sender: userData[3]._id,
-      content: 'I will be there in about 15 minutes.',
-      delivered: true,
-      read: true,
-    },
-    {
-      conversation: convoData[2]._id,
-      sender: userData[5]._id,
-      content: 'Can someone review my latest changes?',
-      delivered: true,
-      read: false,
-    },
-    {
-      conversation: convoData[3]._id,
-      sender: userData[9]._id,
-      content: 'Sounds good to me!',
-      delivered: true,
-      read: true,
-    },
-    {
-      conversation: convoData[4]._id,
-      sender: userData[1]._id,
-      content: 'Let’s schedule a meeting for tomorrow morning.',
-      delivered: true,
-      read: false,
-    },
-    {
-      conversation: convoData[5]._id,
-      sender: userData[4]._id,
-      content: 'Thanks for the quick update.',
-      delivered: true,
-      read: true,
-    },
-    {
-      conversation: convoData[6]._id,
-      sender: userData[7]._id,
-      content: 'I have pushed the fixes to the repository.',
-      delivered: true,
-      read: false,
-    },
-    {
-      conversation: convoData[7]._id,
-      sender: userData[2]._id,
-      content: 'Could you send me the document when you have time?',
-      delivered: true,
-      read: true,
-    },
-    {
-      conversation: convoData[8]._id,
-      sender: userData[6]._id,
-      content: 'Happy birthday! 🎉 Have an amazing day!',
-      delivered: true,
-      read: false,
-    },
-    {
-      conversation: convoData[9]._id,
-      sender: userData[8]._id,
-      content: 'See you all at the event this weekend.',
-      delivered: true,
-      read: true,
-    },
+  const sampleMessages = [
+    'Hey everyone! Hope you are all doing well.',
+    'I will be there in about 15 minutes.',
+    'Can someone review my latest changes?',
+    'Sounds good to me!',
+    'Let’s schedule a meeting for tomorrow morning.',
+    'Thanks for the quick update.',
+    'I have pushed the fixes to the repository.',
+    'Could you send me the document when you have time?',
+    'Happy birthday! 🎉 Have an amazing day!',
+    'See you all at the event this weekend.',
+    'I am working on the bug fix now.',
+    'Can we move the meeting to the afternoon?',
+    'Looks great to me!',
+    'I just merged the pull request.',
+    'Please check your email.',
+    'I will send the report shortly.',
+    'Anyone available for a quick call?',
+    'Thanks for your help!',
+    'That issue has been resolved.',
+    'Let me know if you have any questions.',
   ];
+
+  const messages = Array.from({ length: 100 }, (_, i) => {
+    const conversation = convoData[i % convoData.length];
+
+    return {
+      conversation: conversation._id,
+      sender: randomParticipant(conversation),
+      content: sampleMessages[Math.floor(Math.random() * sampleMessages.length)],
+      delivered: true,
+      read: Math.random() > 0.5,
+    };
+  });
 
   for (const m of messages) {
     const session = await mongoose.startSession();
