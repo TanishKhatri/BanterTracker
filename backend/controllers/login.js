@@ -28,7 +28,7 @@ loginRouter.post('/', async (req, res) => {
 
   // JWT returns forUserToken on verification so we are giving it the
   // two identifiable pieces of info for the user
-  const token = jwt.sign(forUserToken, config.JWT_SECRET, { expiresIn: 3600 });
+  const token = jwt.sign(forUserToken, config.JWT_SECRET, { expiresIn: '30d' });
   return res.status(200).send({
     token,
     username: user.username,
