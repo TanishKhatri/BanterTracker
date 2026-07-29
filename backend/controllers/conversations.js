@@ -58,7 +58,7 @@ conversationRouter.get('/:convoId/messages', middleware.userExtractor, async (re
     return res.status(401).json('User does not have the permission to access these messages');
   }
 
-  const messages = await Message.find({ conversation: convoId });
+  const messages = await Message.find({ conversation: convoId }).populate('sender');
   return res.status(200).send(messages);
 });
 
