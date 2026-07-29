@@ -1,13 +1,19 @@
 import Conversation from './Conversation';
-import { Box, Typography, AppBar, Toolbar, TextField, Stack } from '@mui/material';
+import { Drawer, Box, Typography, AppBar, Toolbar, TextField, Stack } from '@mui/material';
 
-const ConversationList = ({ conversations }) => {
+const ConversationList = ({ conversations, drawerWidth, handleMessageLoad, selectedChat, setSelectedChat }) => {
   return (
-    <Box
+    <Drawer
       sx={{
         display: 'flex',
         flexDirection: 'column',
+        '& .MuiDrawer-paper': {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+        },
       }}
+      variant="permanent"
+      anchor="left"
     >
       <AppBar position="static">
         <Toolbar>
@@ -16,49 +22,64 @@ const ConversationList = ({ conversations }) => {
           </Typography>
 
           <TextField
-            placeholder='search'
+            placeholder="search"
             variant="outlined"
             size="small"
             sx={{
               ml: 2, // gap between "Chats" and the search field
-              bgcolor: "white",
+              bgcolor: 'white',
               borderRadius: 1,
 
-              "& .MuiOutlinedInput-root": {
-                color: "black", // input text
-                "& fieldset": {
-                  borderColor: "black",
+              '& .MuiOutlinedInput-root': {
+                color: 'black', // input text
+                '& fieldset': {
+                  borderColor: 'black',
                 },
-                "&:hover fieldset": {
-                  borderColor: "black",
+                '&:hover fieldset': {
+                  borderColor: 'black',
                 },
-                "&.Mui-focused fieldset": {
-                  borderColor: "black",
+                '&.Mui-focused fieldset': {
+                  borderColor: 'black',
                 },
               },
 
-              "& .MuiInputLabel-root": {
-                color: "black",
+              '& .MuiInputLabel-root': {
+                color: 'black',
               },
-              "& .MuiInputLabel-root.Mui-focused": {
-                color: "black",
+              '& .MuiInputLabel-root.Mui-focused': {
+                color: 'black',
               },
             }}
           />
         </Toolbar>
       </AppBar>
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        {!conversations && <Typography variant="h6" component="div">Oops no Chats here</Typography>}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        {!conversations && (
+          <Typography variant="h6" component="div">
+            Oops no Chats here
+          </Typography>
+        )}
         {conversations && (
           <Stack spacing={1}>
-            {conversations.map(convo => <Conversation key={convo.id} convoObj={convo} />)}
+            {conversations.map((convo, index) => (
+              <Conversation
+                key={convo.id}
+                convoObj={convo}
+                handleMessageLoad={handleMessageLoad}
+                selectedChat={selectedChat}
+                setSelectedChat={setSelectedChat}
+                convoIndex={index}
+              />
+            ))}
           </Stack>
         )}
       </Box>
-    </Box>
+    </Drawer>
   );
 };
 

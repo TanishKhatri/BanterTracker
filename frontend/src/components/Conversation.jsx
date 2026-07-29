@@ -1,12 +1,11 @@
 import { useAuth } from './AuthContext';
 import { Card, CardContent, CardActionArea, ListItem, Typography, ListItemAvatar } from '@mui/material';
 
-const Conversation = ({ convoObj }) => {
-  const { user } = useAuth();
+const Conversation = ({ convoObj, handleMessageLoad, selectedChat, setSelectedChat, convoIndex }) => {
   const { title, participants, lastMessage } = convoObj;
-  const convoUsername = () => {
-    return participants.find((u) => u.id !== user.id).name;
-  };
+  // const convoUsername = () => {
+  //   return participants.find((u) => u.id !== user.id).name;
+  // };
 
   const generateTimePassed = () => {
     if (!lastMessage) {
@@ -43,10 +42,14 @@ const Conversation = ({ convoObj }) => {
     return date.toLocaleDateString('en-GB');
     // e.g. "28/07/2026"
   };
-  const generateTitle = () => (title ? title : convoUsername());
+
+  // const generateTitle = () => (title ? title : convoUsername());
   return (
     <Card>
-      <CardActionArea sx={{
+      <CardActionArea 
+        onClick={() => setSelectedChat(convoIndex)}
+        data-active={selectedChat === convoIndex ? '' : undefined}
+        sx={{
         '&[data-active]': {
           backgroundColor: 'action.selected',
           '&:hover': {
@@ -62,13 +65,13 @@ const Conversation = ({ convoObj }) => {
           padding: 2,
           columnGap: 2,
         }}>
-          <Typography variant="h6">{generateTitle()}</Typography>
+          <Typography variant="h6">{title}</Typography>
 
           <Typography variant='caption'>{generateTimePassed()}</Typography>
 
           {lastMessage && (
             <Typography variant="body2" color="text.secondary" sx={{ gridColumn: '1 / 2' }}>
-              {lastMessage.content}
+              {`${lastMessage.sender.name}: ${lastMessage.content}`}
             </Typography>
           )}
         </CardContent>

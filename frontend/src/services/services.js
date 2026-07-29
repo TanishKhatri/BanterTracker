@@ -19,4 +19,11 @@ const getConversations = async () => {
   return response.data.conversations;
 };
 
-export default { setToken, login, getConversations };
+const getMessages = async (conversationId) => {
+  const response = await axios.get(`${baseURL}/conversations/${conversationId}/messages`, {
+    headers: { Authorization: token },
+  });
+  return response.data;
+}
+
+export default { setToken, login, getConversations, getMessages };
