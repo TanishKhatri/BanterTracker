@@ -7,6 +7,7 @@ import Conversation from '../models/conversation.js';
 const conversationRouter = express.Router();
 
 //Post a conversation provided user is authenticated
+//For group chats
 conversationRouter.post('/', middleware.userExtractor, async (req, res) => {
   const body = req.body;
   const user = req.user;
@@ -41,7 +42,7 @@ conversationRouter.get('/', middleware.userExtractor, async (req, res) => {
   res.status(200).send({ conversations });
 });
 
-//Get all messages sent by a user
+//Get all messages sent by users in a conversation
 conversationRouter.get('/:convoId/messages', middleware.userExtractor, async (req, res) => {
   const user = req.user;
   if (!user) {

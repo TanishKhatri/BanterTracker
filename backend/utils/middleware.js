@@ -42,6 +42,27 @@ const userExtractor = async (req, res, next) => {
   next();
 };
 
+const authenticateSocket = async (socket, next) => {
+  const token = socket.handshake.auth.token;
+
+  if (!token) {
+    return next(new Error("No token provided"));
+  } 
+
+  try {
+    const decodedToken = jwt.verify(token, config.JWT_SECRET);
+    let user = await User.findById(decodedToken.id);
+    if (!user) {
+      return next(new Error('User is missing or invalid'));
+    }
+    user = user.toJSON();
+    socket.user = user;
+    next();
+  } catch (err) {
+    next(new Error("Invalid token"));
+  }
+}
+
 const errorHandler = (error, req, res, next) => {
   logger.error(error.message);
 
@@ -68,4 +89,4 @@ const unknownEndpoint = (req, res, next) => {
   next();
 };
 
-export default { requestLogger, tokenExtractor, userExtractor, errorHandler, unknownEndpoint };
+export default { requestLogger, tokenExtractor, userExtractor, errorHandler, authenticateSocket, unknownEndpoint };

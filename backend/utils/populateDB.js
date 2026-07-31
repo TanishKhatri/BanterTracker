@@ -170,9 +170,7 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
     return {
       conversation: conversation._id,
       sender: randomParticipant(conversation),
-      content: sampleMessages[Math.floor(Math.random() * sampleMessages.length)],
-      delivered: true,
-      read: Math.random() > 0.5,
+      content: sampleMessages[Math.floor(Math.random() * sampleMessages.length)]
     };
   });
 

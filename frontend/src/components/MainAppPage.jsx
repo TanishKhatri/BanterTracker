@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { useSocket } from './SocketProvider';
 import ConversationList from './ConversationList';
 import services from '../services/services';
 import MessageBox from './MessageBox';
@@ -7,6 +8,7 @@ import { Box, Drawer, AppBar } from '@mui/material';
 
 const MainAppPage = () => {
   const { user } = useAuth();
+  const socket = useSocket();
   const [conversations, setConversations] = useState(null);
   const [selectedChat, setSelectedChat] = useState(0);
   const [messages, setMessages] = useState(null);
@@ -35,20 +37,27 @@ const MainAppPage = () => {
     }
   };
 
+  const loadConversations = async () => {
+    try {
+      let convos = await services.getConversations();
+      convos = convos.map((c) => ({ ...c, title: generateTitle(c) }));
+      setConversations(convos);
+    } catch {
+      console.log('Couldnt retrieve conversations');
+    }
+  };
+
   useEffect(() => {
-    (async function () {
-      try {
-        let convos = await services.getConversations();
-        convos = convos.map((c) => {
-          return {...c, title: generateTitle(c)};
-        })
-        setConversations(convos);
-        console.log(convos);
-      } catch {
-        console.log('Couldnt retrieve conversations');
-      }
-    })();
-  }, []);
+    if (!socket) return;
+
+    socket.on('connect', loadConversations);
+    socket.on('receiveMessage', loadConversations);
+
+    return () => {
+      socket.off('connect', loadConversations);
+      socket.off('receiveMessage', loadConversations);
+    };
+  }, [socket]);
 
   const drawerWidth = 400;
   return (
@@ -66,7 +75,11 @@ const MainAppPage = () => {
         selectedChat={selectedChat}
         setSelectedChat={setSelectedChat}
       />
-      <MessageBox drawerWidth={drawerWidth} messages={messages} convoObj={conversations?.[selectedChat]}  />
+      <MessageBox
+        drawerWidth={drawerWidth}
+        messages={messages}
+        convoObj={conversations?.[selectedChat]}
+      />
     </Box>
   );
 };

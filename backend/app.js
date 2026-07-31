@@ -8,11 +8,15 @@ import config from './utils/config.js';
 import logger from './utils/logger.js';
 import middleware from './utils/middleware.js';
 import { Server } from 'socket.io';
+import registerSockets from './sockets/index.js';
 
 const app = express();
 const server = createServer(app);
-const io = new Server(server);
-
+const io = new Server(server, {
+  connectionStateRecovery: {}
+});
+io.use(middleware.authenticateSocket);
+registerSockets(io);
 //Connect to MongoDB
 mongoose
   .connect(config.MONGODB_URI, { family: 4 })
@@ -32,10 +36,6 @@ app.use(middleware.tokenExtractor);
 app.use('/api/users', usersRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/conversations', conversationRouter);
-
-io.on('connection', (socket) => {
-  console.log('a user connected');
-});
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);

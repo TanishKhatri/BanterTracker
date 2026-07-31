@@ -60,17 +60,6 @@ const LoginForm = ({ handleLogin }) => {
         <Button type='submit' variant='contained'>Submit</Button>
       </Box>
     </Paper>
-    // <form onSubmit={handleSubmit}>
-    //   <label>
-    //     Username:
-    //     <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
-    //   </label>
-    //   <label>
-    //     Password:
-    //     <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} />
-    //   </label>
-    //   <button type='submit'>Submit</button>
-    // </form>
   );
 };
 

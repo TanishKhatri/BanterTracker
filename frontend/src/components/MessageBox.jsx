@@ -1,11 +1,20 @@
-import { Box, AppBar, Toolbar, TextField, Card, Typography, Stack } from "@mui/material";
+import { Box, AppBar, Toolbar, TextField, Card, Typography, Stack, Button } from "@mui/material";
+import { useSocket } from "./SocketProvider";
+import { useAuth } from "./AuthContext";
 import Message from "./Message";
+import SendMessage from "./SendMessages";
 
 const MessageBox = ({ drawerWidth, messages, convoObj }) => {
   if (!messages || !convoObj) {
     return null;
   }
 
+  const socket = useSocket();
+  const handleMessageSending = (msg) => {
+    socket.emit('sendMessage', { message: msg, convoId: convoObj.id });
+  }
+
+  const { logout } = useAuth();
   return (
     <Box position='fixed' sx={{
       display: "flex", 
@@ -19,6 +28,7 @@ const MessageBox = ({ drawerWidth, messages, convoObj }) => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {convoObj.title}
           </Typography>
+          <Button onClick={logout} color="white">logout</Button>
         </Toolbar>
       </AppBar>
       <Stack spacing={2} sx={{ 
@@ -29,6 +39,7 @@ const MessageBox = ({ drawerWidth, messages, convoObj }) => {
        }}>
         {messages.map((m) => <Message key={m.id} messageObj={m} />)}
       </Stack>
+      <SendMessage handleMessageSending={handleMessageSending} />
     </Box>
   )
 }

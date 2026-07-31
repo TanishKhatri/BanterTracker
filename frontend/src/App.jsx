@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box } from '@mui/material';
 import { Routes, Route, Link, useNavigate } from 'react-router';
+import { SocketProvider } from './components/SocketProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginForm from './components/LoginForm';
 import MainAppPage from './components/MainAppPage';
@@ -18,7 +19,11 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<LoginForm />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<MainAppPage />} />
+          <Route path="/" element={
+            <SocketProvider>
+              <MainAppPage />
+            </SocketProvider>
+          } />
         </Route>
       </Routes>
     </Box>
