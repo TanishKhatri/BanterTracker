@@ -5,7 +5,7 @@ import Message from "./Message";
 import SendMessage from "./SendMessages";
 
 const MessageBox = ({ drawerWidth, messages, convoObj }) => {
-  if (!messages || !convoObj) {
+  if (!convoObj) {
     return null;
   }
 
@@ -37,7 +37,9 @@ const MessageBox = ({ drawerWidth, messages, convoObj }) => {
         overflowY: 'auto',
         p: 4
        }}>
-        {messages.map((m) => <Message key={m.id} messageObj={m} />)}
+        {messages && (
+          messages.map((m) => <Message key={m.id} messageObj={m} />)
+        )}
       </Stack>
       <SendMessage handleMessageSending={handleMessageSending} />
     </Box>

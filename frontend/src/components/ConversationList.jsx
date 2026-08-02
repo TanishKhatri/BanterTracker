@@ -1,7 +1,7 @@
 import Conversation from './Conversation';
 import { Drawer, Box, Typography, AppBar, Toolbar, TextField, Stack } from '@mui/material';
 
-const ConversationList = ({ conversations, drawerWidth, handleMessageLoad, selectedChat, setSelectedChat }) => {
+const ConversationList = ({ conversations, drawerWidth, selectedConversationId, setSelectedConversationId }) => {
   return (
     <Drawer
       sx={{
@@ -66,14 +66,12 @@ const ConversationList = ({ conversations, drawerWidth, handleMessageLoad, selec
         )}
         {conversations && (
           <Stack spacing={1}>
-            {conversations.map((convo, index) => (
+            {conversations.map((convo) => (
               <Conversation
                 key={convo.id}
                 convoObj={convo}
-                handleMessageLoad={handleMessageLoad}
-                selectedChat={selectedChat}
-                setSelectedChat={setSelectedChat}
-                convoIndex={index}
+                selectedConversationId={selectedConversationId}
+                setSelectedConversationId={setSelectedConversationId}
               />
             ))}
           </Stack>

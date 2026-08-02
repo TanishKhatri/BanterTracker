@@ -77,67 +77,94 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
   const conversations = [
     {
       title: 'Project Team',
-      participants: [userData[0]._id, userData[1]._id, userData[2]._id],
+      participants: [
+        { userId: userData[0]._id },
+        { userId: userData[1]._id },
+        { userId: userData[2]._id },
+      ],
     },
     {
-      participants: [userData[3]._id, userData[4]._id],
+      participants: [
+        { userId: userData[3]._id },
+        { userId: userData[4]._id },
+      ],
     },
     {
       title: 'Development Squad',
-      participants: [userData[5]._id, userData[6]._id, userData[7]._id, userData[8]._id],
+      participants: [
+        { userId: userData[5]._id },
+        { userId: userData[6]._id },
+        { userId: userData[7]._id },
+        { userId: userData[8]._id },
+      ],
     },
     {
-      participants: [userData[9]._id, userData[0]._id],
+      participants: [
+        { userId: userData[9]._id },
+        { userId: userData[0]._id },
+      ],
     },
     {
       title: 'Leadership Group',
       participants: [
-        userData[1]._id,
-        userData[3]._id,
-        userData[5]._id,
-        userData[7]._id,
-        userData[9]._id,
+        { userId: userData[1]._id },
+        { userId: userData[3]._id },
+        { userId: userData[5]._id },
+        { userId: userData[7]._id },
+        { userId: userData[9]._id },
       ],
     },
     {
       title: 'Study Group',
-      participants: [userData[2]._id, userData[4]._id, userData[6]._id],
+      participants: [
+        { userId: userData[2]._id },
+        { userId: userData[4]._id },
+        { userId: userData[6]._id },
+      ],
     },
     {
       title: 'Weekend Crew',
       participants: [
-        userData[8]._id,
-        userData[9]._id,
-        userData[1]._id,
-        userData[4]._id,
-        userData[7]._id,
-        userData[0]._id,
+        { userId: userData[8]._id },
+        { userId: userData[9]._id },
+        { userId: userData[1]._id },
+        { userId: userData[4]._id },
+        { userId: userData[7]._id },
+        { userId: userData[0]._id },
       ],
     },
     {
-      participants: [userData[5]._id, userData[2]._id],
+      participants: [
+        { userId: userData[5]._id },
+        { userId: userData[2]._id },
+      ],
     },
     {
       title: 'Gaming Party',
-      participants: [userData[6]._id, userData[8]._id, userData[3]._id, userData[0]._id],
+      participants: [
+        { userId: userData[6]._id },
+        { userId: userData[8]._id },
+        { userId: userData[3]._id },
+        { userId: userData[0]._id },
+      ],
     },
     {
       title: 'All Hands',
       participants: [
-        userData[0]._id,
-        userData[2]._id,
-        userData[4]._id,
-        userData[6]._id,
-        userData[8]._id,
-        userData[9]._id,
-        userData[1]._id,
+        { userId: userData[0]._id },
+        { userId: userData[2]._id },
+        { userId: userData[4]._id },
+        { userId: userData[6]._id },
+        { userId: userData[8]._id },
+        { userId: userData[9]._id },
+        { userId: userData[1]._id },
       ],
     },
   ];
   await Conversation.insertMany(conversations);
 
   const randomParticipant = (conversation) => {
-    return conversation.participants[Math.floor(Math.random() * conversation.participants.length)];
+    return conversation.participants[Math.floor(Math.random() * conversation.participants.length)].userId;
   };
 
   const convoData = await Conversation.find({});

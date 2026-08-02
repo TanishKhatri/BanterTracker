@@ -1,4 +1,4 @@
-const joinUserId = (io, socket) => {
+const joinUserId = (socket) => {
   socket.join(socket.user.id);
 }
 

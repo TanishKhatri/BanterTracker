@@ -20,24 +20,43 @@ const registerChatSocket = (io, socket) => {
         if (!conversation) {
           return socket.emit('error', { error: 'conversation doesnt exist' });
         }
-        if (!conversation.participants.includes(socket.user.id)) {
+
+        if (!conversation.participants.some((p) => p.userId.toString() === socket.user.id)) {
           return socket.emit('error', { error: 'socket is not a participant of this conversation' });
         }
 
         let savedConversation = null;
+        let savedMessage = null;
         await session.withTransaction(async () => {
           const newMessage = new Message({
             conversation: conversation._id,
             sender: socket.user.id,
             content: message
           });
-          const savedMessage = await newMessage.save({ session });
+          savedMessage = await newMessage.save({ session });
           conversation.lastMessage = savedMessage._id;
           savedConversation = await conversation.save({ session });
         })
 
         savedConversation.participants.forEach((p) => {
-          io.to(p.toString()).emit('receiveMessage', { conversation: conversation.toJSON() }) 
+          if (!(p.userId.toString() === socket.user.id)) {
+            p.unreadCount++;
+          } else {
+            p.lastReadAt = new Date(savedMessage.updatedAt);
+          }
+        })
+        await savedConversation.save();
+
+        const populatedConversation = await Conversation.findById(savedConversation._id)
+          .populate('participants.userId')
+          .populate({
+            path: 'lastMessage',
+            populate: {
+              path: 'sender',
+            },
+          });
+        savedConversation.participants.forEach((p) => {
+          io.to(p.userId.toString()).emit('receiveMessage', { receivingConversation: populatedConversation }) 
         });
       } catch(error) {
         return socket.emit('error', { error: error.message });
@@ -52,9 +71,17 @@ const registerChatSocket = (io, socket) => {
           return socket.emit('error', { error: 'receiver not found' });
         }
         const conversation = new Conversation({
-          participants: [socket.user.id, receiverId]
+          participants: [
+            {
+              userId: socket.user.id
+            }, 
+            {
+              userId: receiverId
+            }
+          ]
         });
         let savedConversation = null;
+        let savedMessage = null;
         await session.withTransaction(async () => {
           savedConversation = await conversation.save({ session });
           const newMessage = new Message({
@@ -62,13 +89,30 @@ const registerChatSocket = (io, socket) => {
             sender: socket.user.id,
             content: message
           });
-          const savedMessage = await newMessage.save({ session });
+          savedMessage = await newMessage.save({ session });
           conversation.lastMessage = savedMessage._id;
           savedConversation = await conversation.save({ session });
         });
 
         savedConversation.participants.forEach((p) => {
-          io.to(p.toString()).emit('receiveMessage', { conversation: conversation.toJSON() }) 
+          if (!(p.userId.toString() === socket.user.id)) {
+            p.unreadCount++;
+          } else {
+            p.lastReadAt = new Date(savedMessage.updatedAt);
+          }
+        })
+        await savedConversation.save();
+
+        const populatedConversation = await Conversation.findById(savedConversation._id)
+          .populate('participants.userId')
+          .populate({
+            path: 'lastMessage',
+            populate: {
+              path: 'sender',
+            },
+          });
+        savedConversation.participants.forEach((p) => {
+          io.to(p.userId.toString()).emit('receiveMessage', { receivingConversation: populatedConversation }) 
         });
       } catch(error) {
         return socket.emit('error', { error: error.message });

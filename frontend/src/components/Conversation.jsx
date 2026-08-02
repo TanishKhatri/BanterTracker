@@ -1,7 +1,7 @@
 import { useAuth } from './AuthContext';
 import { Card, CardContent, CardActionArea, ListItem, Typography, ListItemAvatar } from '@mui/material';
 
-const Conversation = ({ convoObj, handleMessageLoad, selectedChat, setSelectedChat, convoIndex }) => {
+const Conversation = ({ convoObj, selectedConversationId, setSelectedConversationId }) => {
   const { title, participants, lastMessage } = convoObj;
   // const convoUsername = () => {
   //   return participants.find((u) => u.id !== user.id).name;
@@ -47,8 +47,8 @@ const Conversation = ({ convoObj, handleMessageLoad, selectedChat, setSelectedCh
   return (
     <Card>
       <CardActionArea 
-        onClick={() => setSelectedChat(convoIndex)}
-        data-active={selectedChat === convoIndex ? '' : undefined}
+        onClick={() => setSelectedConversationId(convoObj.id)}
+        data-active={selectedConversationId === convoObj.id ? '' : undefined}
         sx={{
         '&[data-active]': {
           backgroundColor: 'action.selected',

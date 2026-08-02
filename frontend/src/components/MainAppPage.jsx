@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketProvider';
 import ConversationList from './ConversationList';
@@ -6,58 +6,85 @@ import services from '../services/services';
 import MessageBox from './MessageBox';
 import { Box, Drawer, AppBar } from '@mui/material';
 
+const drawerWidth = 400;
+
 const MainAppPage = () => {
   const { user } = useAuth();
   const socket = useSocket();
   const [conversations, setConversations] = useState(null);
-  const [selectedChat, setSelectedChat] = useState(0);
+  const [selectedConversationId, setSelectedConversationId] = useState(null);
   const [messages, setMessages] = useState(null);
   const { logout } = useAuth();
 
-  const handleMessageLoad = async (convoId) => {
+  const generateTitle = useCallback((convoObj) => {
+    if (convoObj.title) {
+      return convoObj.title;
+    } else {
+      return convoObj.participants.find((u) => u.userId.id !== user.id).userId.name;
+    }
+  }, [user]);
+
+  const handleMessageLoad = useCallback(async (convoId) => {
     try {
       const newMessages = await services.getMessages(convoId);
       setMessages(newMessages);
     } catch {
       console.log('Messages failed to load');
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    if (conversations && conversations[selectedChat]) {
-      handleMessageLoad(conversations[selectedChat].id);
-    }
-  }, [selectedChat, conversations]);
+  const handleReceiveMessage = useCallback(({ receivingConversation }) => {
+    setConversations(prev => {
+      if (!prev) return [receivingConversation];
 
-  const generateTitle = (convoObj) => {
-    if (convoObj.title) {
-      return convoObj.title;
-    } else {
-      return convoObj.participants.find((u) => u.id !== user.id).name;
-    }
-  };
+      const exists = prev.find((c) => c.id === receivingConversation.id);
+      if (!exists) {
+        return [...prev, receivingConversation];
+      }
 
-  const loadConversations = async () => {
-    try {
-      let convos = await services.getConversations();
-      convos = convos.map((c) => ({ ...c, title: generateTitle(c) }));
-      setConversations(convos);
-    } catch {
-      console.log('Couldnt retrieve conversations');
+      return prev.map((c) => c.id === receivingConversation.id ? receivingConversation : c);
+    });
+
+    if (receivingConversation.id === selectedConversationId) {
+      setMessages((prev) => [...prev, receivingConversation.lastMessage])
     }
-  };
+  }, [selectedConversationId])
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('connect', loadConversations);
-    socket.on('receiveMessage', loadConversations);
+    const initialize = async () => {
+      try {
+        let convos = await services.getConversations();
+        convos = convos.map(c => ({
+          ...c,
+          title: generateTitle(c),
+        }));
+
+        setConversations(convos);
+
+        if (convos.length > 0) {
+          console.log(convos[0]);
+          setSelectedConversationId(convos[0].id);
+        }
+      } catch {
+        console.log("Couldn't retrieve conversations");
+      }
+    };
+
+    initialize();
+
+    socket.on("receiveMessage", handleReceiveMessage);
 
     return () => {
-      socket.off('connect', loadConversations);
-      socket.off('receiveMessage', loadConversations);
+      socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, [socket]);
+  }, [socket, selectedConversationId]);
+
+  useEffect(() => {
+    if (!selectedConversationId) return;
+    handleMessageLoad(selectedConversationId);
+  }, [selectedConversationId]);
 
   const drawerWidth = 400;
   return (
@@ -71,14 +98,13 @@ const MainAppPage = () => {
       <ConversationList
         conversations={conversations}
         drawerWidth={drawerWidth}
-        handleMessageLoad={handleMessageLoad}
-        selectedChat={selectedChat}
-        setSelectedChat={setSelectedChat}
+        selectedConversationId={selectedConversationId}
+        setSelectedConversationId={setSelectedConversationId}
       />
       <MessageBox
         drawerWidth={drawerWidth}
         messages={messages}
-        convoObj={conversations?.[selectedChat]}
+        convoObj={conversations && conversations.find((c) => c.id === selectedConversationId)}
       />
     </Box>
   );

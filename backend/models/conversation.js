@@ -19,9 +19,17 @@ const conversationSchema = new mongoose.Schema(
     participants: {
       type: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'User',
-          required: true,
+          _id: false,
+          userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+          },
+          lastReadAt: Date,
+          unreadCount: {
+            type: Number,
+            default: 0
+          }
         },
       ],
       validate: {

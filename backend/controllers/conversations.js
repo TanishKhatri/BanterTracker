@@ -31,8 +31,8 @@ conversationRouter.get('/', middleware.userExtractor, async (req, res) => {
     return res.status(401).json({ error: 'No token specified' });
   }
 
-  const conversations = await Conversation.find({ participants: user._id })
-    .populate('participants')
+  const conversations = await Conversation.find({ 'participants.userId': user._id })
+    .populate('participants.userId')
     .populate({
       path: 'lastMessage',
       populate: {
@@ -55,7 +55,7 @@ conversationRouter.get('/:convoId/messages', middleware.userExtractor, async (re
     return res.status(400).json({ error: 'provided conversation does not exist' });
   }
 
-  if (!conversationSearched.participants.includes(user._id)) {
+  if (!conversationSearched.participants.some((p) => p.userId.equals(user._id))) {
     return res.status(401).json('User does not have the permission to access these messages');
   }
 
