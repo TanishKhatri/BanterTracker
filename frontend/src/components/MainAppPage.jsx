@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { useSocket } from './SocketProvider';
 import ConversationList from './ConversationList';
@@ -33,7 +33,7 @@ const MainAppPage = () => {
     }
   }, []);
 
-  const handleReceiveMessage = useCallback(({ receivingConversation }) => {
+  const handleReceiveMessage = ({ receivingConversation }) => {
     setConversations(prev => {
       if (!prev) return [receivingConversation];
 
@@ -45,10 +45,16 @@ const MainAppPage = () => {
       return prev.map((c) => c.id === receivingConversation.id ? receivingConversation : c);
     });
 
-    if (receivingConversation.id === selectedConversationId) {
+    if (receivingConversation.id === selectedConversationIdRef.current) {
       setMessages((prev) => [...prev, receivingConversation.lastMessage])
     }
-  }, [selectedConversationId])
+  }
+
+  const selectedConversationIdRef = useRef(null);
+
+  useEffect(() => {
+    selectedConversationIdRef.current = selectedConversationId;
+  }, [selectedConversationId]);
 
   useEffect(() => {
     if (!socket) return;
@@ -56,6 +62,7 @@ const MainAppPage = () => {
     const initialize = async () => {
       try {
         let convos = await services.getConversations();
+        console.log(convos);
         convos = convos.map(c => ({
           ...c,
           title: generateTitle(c),
@@ -64,7 +71,6 @@ const MainAppPage = () => {
         setConversations(convos);
 
         if (convos.length > 0) {
-          console.log(convos[0]);
           setSelectedConversationId(convos[0].id);
         }
       } catch {
@@ -79,7 +85,7 @@ const MainAppPage = () => {
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
     };
-  }, [socket, selectedConversationId]);
+  }, [socket]);
 
   useEffect(() => {
     if (!selectedConversationId) return;

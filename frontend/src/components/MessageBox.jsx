@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Box, AppBar, Toolbar, TextField, Card, Typography, Stack, Button } from "@mui/material";
 import { useSocket } from "./SocketProvider";
 import { useAuth } from "./AuthContext";
@@ -5,16 +6,30 @@ import Message from "./Message";
 import SendMessage from "./SendMessages";
 
 const MessageBox = ({ drawerWidth, messages, convoObj }) => {
-  if (!convoObj) {
-    return null;
-  }
+  console.log(messages);
+  console.log(convoObj);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "auto",
+    });
+  }, [convoObj?.id]);
 
   const socket = useSocket();
   const handleMessageSending = (msg) => {
     socket.emit('sendMessage', { message: msg, convoId: convoObj.id });
+    bottomRef.current?.scrollIntoView({
+      behavior: "auto",
+    });
   }
 
   const { logout } = useAuth();
+
+  if (!convoObj) {
+    return null;
+  }
+  
   return (
     <Box position='fixed' sx={{
       display: "flex", 
@@ -40,6 +55,7 @@ const MessageBox = ({ drawerWidth, messages, convoObj }) => {
         {messages && (
           messages.map((m) => <Message key={m.id} messageObj={m} />)
         )}
+        <Box ref={bottomRef}></Box>
       </Stack>
       <SendMessage handleMessageSending={handleMessageSending} />
     </Box>

@@ -1,11 +1,20 @@
 import { useAuth } from './AuthContext';
-import { Card, CardContent, CardActionArea, ListItem, Typography, ListItemAvatar } from '@mui/material';
+import {
+  Chip,
+  Badge,
+  Card,
+  CardContent,
+  CardActionArea,
+  ListItem,
+  Typography,
+  ListItemAvatar,
+} from '@mui/material';
 
 const Conversation = ({ convoObj, selectedConversationId, setSelectedConversationId }) => {
   const { title, participants, lastMessage } = convoObj;
-  // const convoUsername = () => {
-  //   return participants.find((u) => u.id !== user.id).name;
-  // };
+  const { user } = useAuth();
+
+  const unreadCount = convoObj.participants.find((p) => p.userId.id === user.id).unreadCount;
 
   const generateTimePassed = () => {
     if (!lastMessage) {
@@ -46,33 +55,50 @@ const Conversation = ({ convoObj, selectedConversationId, setSelectedConversatio
   // const generateTitle = () => (title ? title : convoUsername());
   return (
     <Card>
-      <CardActionArea 
+      <CardActionArea
         onClick={() => setSelectedConversationId(convoObj.id)}
         data-active={selectedConversationId === convoObj.id ? '' : undefined}
         sx={{
-        '&[data-active]': {
-          backgroundColor: 'action.selected',
-          '&:hover': {
-            backgroundColor: 'action.selectedHover',
+          '&[data-active]': {
+            backgroundColor: 'action.selected',
+            '&:hover': {
+              backgroundColor: 'action.selectedHover',
+            },
           },
-        },
-      }}>
-        <CardContent sx={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto',
-          gridTemplateRows: 'auto auto',
-          width: '100%',
-          padding: 2,
-          columnGap: 2,
-        }}>
+        }}
+      >
+        <CardContent
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto',
+            gridTemplateRows: 'auto auto',
+            width: '100%',
+            padding: 2,
+            columnGap: 2,
+          }}
+        >
           <Typography variant="h6">{title}</Typography>
 
-          <Typography variant='caption'>{generateTimePassed()}</Typography>
+          <Typography variant="caption">{generateTimePassed()}</Typography>
 
           {lastMessage && (
             <Typography variant="body2" color="text.secondary" sx={{ gridColumn: '1 / 2' }}>
               {`${lastMessage.sender.name}: ${lastMessage.content}`}
             </Typography>
+          )}
+
+          {unreadCount === 0 ? null : (
+            <Chip
+              label={unreadCount}
+              color="primary"
+              size="small"
+              sx={{
+                gridColumn: 2,
+                gridRow: 2,
+                justifySelf: 'end',
+                alignSelf: 'start',
+              }}
+            />
           )}
         </CardContent>
       </CardActionArea>
