@@ -1,6 +1,9 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import { createServer } from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import usersRouter from './controllers/users.js';
 import loginRouter from './controllers/login.js';
 import conversationRouter from './controllers/conversations.js';
@@ -17,6 +20,13 @@ const io = new Server(server, {
 });
 io.use(middleware.authenticateSocket);
 registerSockets(io);
+
+// __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Adjust this path if your dist folder is elsewhere
+const distPath = path.resolve(__dirname, './dist');
 //Connect to MongoDB
 mongoose
   .connect(config.MONGODB_URI, { family: 4 })
@@ -36,6 +46,15 @@ app.use(middleware.tokenExtractor);
 app.use('/api/users', usersRouter);
 app.use('/api/login', loginRouter);
 app.use('/api/conversations', conversationRouter);
+
+// Serve frontend
+app.use(express.static(distPath));
+
+// SPA fallback
+app.get('/*splat', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
+});
+
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
