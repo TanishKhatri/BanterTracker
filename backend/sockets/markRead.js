@@ -1,7 +1,7 @@
 import Conversation from "../models/conversation.js";
 import Message from "../models/message.js";
 
-const registerMarkReadSocket = (socket) => {
+const registerMarkReadSocket = (io, socket) => {
   socket.on('markRead', async ({ messageId }) => {
     try {
       const givenMessage = await Message.findById(messageId);
@@ -49,7 +49,9 @@ const registerMarkReadSocket = (socket) => {
         })
       );
 
-      socket.emit('markedRead', { conversation: populatedConversationObject });
+      populatedConversationObject.participants.forEach((p) => {
+        io.to(p.userId.id.toString()).emit('markedRead', { conversation: populatedConversationObject })
+      })
     } catch(error) {
       socket.emit('error', { error: error.message });
     }

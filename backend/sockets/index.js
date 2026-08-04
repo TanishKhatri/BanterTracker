@@ -5,7 +5,7 @@ const registerSockets = (io) => {
   io.on('connection', (socket) => {
     joinUserId(socket)
     registerChatSocket(io, socket);
-    registerMarkReadSocket(socket)
+    registerMarkReadSocket(io, socket)
   });
 }
 
