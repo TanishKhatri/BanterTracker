@@ -26,11 +26,14 @@ const messageSchema = new mongoose.Schema(
 messageSchema.index({ conversation: 1, createdAt: 1 });
 
 messageSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  },
+  transform: (doc, obj) => {
+    obj.id = doc.id;
+    
+    delete obj._id;
+    delete obj.__v;
+
+    return obj;
+  }
 });
 
 const Message = mongoose.model('Message', messageSchema);

@@ -17,7 +17,7 @@ conversationRouter.post('/', middleware.userExtractor, async (req, res) => {
 
   const newConvo = new Conversation({
     title: body.title,
-    participants: body.participants
+    participants: body.participants,
   });
 
   const savedConvo = await newConvo.save();
@@ -33,13 +33,36 @@ conversationRouter.get('/', middleware.userExtractor, async (req, res) => {
 
   const conversations = await Conversation.find({ 'participants.userId': user._id })
     .populate('participants.userId')
+    .populate('participants.lastMessageRead')
     .populate({
       path: 'lastMessage',
       populate: {
         path: 'sender',
       },
     });
-  res.status(200).send({ conversations });
+  
+  const conversationsObject = conversations.map((c) => c.toJSON());
+
+  await Promise.all(
+    conversationsObject.map(async (conversation) => {
+      await Promise.all(
+        conversation.participants.map(async (participant) => {
+          const query = {
+            conversation: conversation.id,
+          };
+
+          // Only filter by lastMessageRead if it exists
+          if (participant.lastMessageRead?.id) {
+            query._id = { $gt: participant.lastMessageRead.id };
+          }
+
+          participant.unreadCount = await Message.countDocuments(query);
+        })
+      );
+    })
+  );
+
+  res.status(200).send({ conversations: conversationsObject });
 });
 
 //Get all messages sent by users in a conversation
@@ -50,7 +73,7 @@ conversationRouter.get('/:convoId/messages', middleware.userExtractor, async (re
   }
 
   const { convoId } = req.params;
-  const conversationSearched = await Conversation.findById(convoId); 
+  const conversationSearched = await Conversation.findById(convoId);
   if (!conversationSearched) {
     return res.status(400).json({ error: 'provided conversation does not exist' });
   }

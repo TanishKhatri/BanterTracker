@@ -16,13 +16,16 @@ const MainAppPage = () => {
   const [messages, setMessages] = useState(null);
   const { logout } = useAuth();
 
-  const generateTitle = useCallback((convoObj) => {
-    if (convoObj.title) {
-      return convoObj.title;
-    } else {
-      return convoObj.participants.find((u) => u.userId.id !== user.id).userId.name;
-    }
-  }, [user]);
+  const generateTitle = useCallback(
+    (convoObj) => {
+      if (convoObj.title) {
+        return convoObj.title;
+      } else {
+        return convoObj.participants.find((u) => u.userId.id !== user.id).userId.name;
+      }
+    },
+    [user]
+  );
 
   const handleMessageLoad = useCallback(async (convoId) => {
     try {
@@ -34,7 +37,9 @@ const MainAppPage = () => {
   }, []);
 
   const handleReceiveMessage = ({ receivingConversation }) => {
-    setConversations(prev => {
+    receivingConversation = {...receivingConversation, title: generateTitle(receivingConversation)};
+    console.log(receivingConversation);
+    setConversations((prev) => {
       if (!prev) return [receivingConversation];
 
       const exists = prev.find((c) => c.id === receivingConversation.id);
@@ -42,13 +47,27 @@ const MainAppPage = () => {
         return [...prev, receivingConversation];
       }
 
-      return prev.map((c) => c.id === receivingConversation.id ? receivingConversation : c);
+      return prev.map((c) => (c.id === receivingConversation.id ? receivingConversation : c));
     });
 
     if (receivingConversation.id === selectedConversationIdRef.current) {
-      setMessages((prev) => [...prev, receivingConversation.lastMessage])
+      setMessages((prev) => [...prev, receivingConversation.lastMessage]);
     }
-  }
+  };
+
+  const handleMarkedRead = ({ conversation }) => {
+    conversation = {...conversation, title: generateTitle(conversation)};
+    setConversations((prev) => {
+      if (!prev) return [conversation];
+
+      const exists = prev.find((c) => c.id === conversation.id);
+      if (!exists) {
+        return [...prev, conversation];
+      }
+
+      return prev.map((c) => (c.id === conversation.id ? conversation : c));
+    });
+  };
 
   const selectedConversationIdRef = useRef(null);
 
@@ -63,7 +82,7 @@ const MainAppPage = () => {
       try {
         let convos = await services.getConversations();
         console.log(convos);
-        convos = convos.map(c => ({
+        convos = convos.map((c) => ({
           ...c,
           title: generateTitle(c),
         }));
@@ -80,10 +99,14 @@ const MainAppPage = () => {
 
     initialize();
 
-    socket.on("receiveMessage", handleReceiveMessage);
+    socket.on('receiveMessage', handleReceiveMessage);
+    socket.on('markedRead', handleMarkedRead);
+    socket.on('error', ({ error }) => console.log(error));
 
     return () => {
-      socket.off("receiveMessage", handleReceiveMessage);
+      socket.off('receiveMessage', handleReceiveMessage);
+      socket.off('markedRead', handleMarkedRead);
+      socket.off('error');
     };
   }, [socket]);
 

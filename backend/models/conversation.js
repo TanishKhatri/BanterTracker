@@ -25,10 +25,9 @@ const conversationSchema = new mongoose.Schema(
             ref: 'User',
             required: true,
           },
-          lastReadAt: Date,
-          unreadCount: {
-            type: Number,
-            default: 0
+          lastMessageRead: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Message',
           }
         },
       ],
@@ -52,11 +51,14 @@ const conversationSchema = new mongoose.Schema(
 conversationSchema.index({ participants: 1 });
 
 conversationSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  },
+  transform: (doc, obj) => {
+    obj.id = doc.id;
+    
+    delete obj._id;
+    delete obj.__v;
+
+    return obj;
+  }
 });
 
 const Conversation = mongoose.model('Conversation', conversationSchema);

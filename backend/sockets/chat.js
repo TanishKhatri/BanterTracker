@@ -35,28 +35,42 @@ const registerChatSocket = (io, socket) => {
           });
           savedMessage = await newMessage.save({ session });
           conversation.lastMessage = savedMessage._id;
+          conversation.participants.forEach((p) => {
+            if (p.userId.toString() === socket.user.id) {
+              p.lastMessageRead = savedMessage._id;
+            }
+          })
           savedConversation = await conversation.save({ session });
         })
 
-        savedConversation.participants.forEach((p) => {
-          if (!(p.userId.toString() === socket.user.id)) {
-            p.unreadCount++;
-          } else {
-            p.lastReadAt = new Date(savedMessage.updatedAt);
-          }
-        })
-        await savedConversation.save();
-
         const populatedConversation = await Conversation.findById(savedConversation._id)
           .populate('participants.userId')
+          .populate('participants.lastMessageRead')
           .populate({
             path: 'lastMessage',
             populate: {
               path: 'sender',
             },
           });
+        
+        const populatedConversationObject = populatedConversation.toJSON();
+
+        await Promise.all(
+          populatedConversationObject.participants.map(async (participant) => {
+            const query = {
+              conversation: populatedConversationObject.id,
+            };
+  
+            // Only filter by lastMessageRead if it exists
+            if (participant.lastMessageRead?.id) {
+              query._id = { $gt: participant.lastMessageRead.id };
+            }
+  
+            participant.unreadCount = await Message.countDocuments(query);
+          })
+        );
         savedConversation.participants.forEach((p) => {
-          io.to(p.userId.toString()).emit('receiveMessage', { receivingConversation: populatedConversation }) 
+          io.to(p.userId.toString()).emit('receiveMessage', { receivingConversation: populatedConversationObject }) 
         });
       } catch(error) {
         return socket.emit('error', { error: error.message });
@@ -91,28 +105,42 @@ const registerChatSocket = (io, socket) => {
           });
           savedMessage = await newMessage.save({ session });
           conversation.lastMessage = savedMessage._id;
+          conversation.participants.forEach((p) => {
+            if (p.userId.toString() === socket.user.id) {
+              p.lastMessageRead = savedMessage._id;
+            }
+          })
           savedConversation = await conversation.save({ session });
         });
 
-        savedConversation.participants.forEach((p) => {
-          if (!(p.userId.toString() === socket.user.id)) {
-            p.unreadCount++;
-          } else {
-            p.lastReadAt = new Date(savedMessage.updatedAt);
-          }
-        })
-        await savedConversation.save();
-
         const populatedConversation = await Conversation.findById(savedConversation._id)
           .populate('participants.userId')
+          .populate('participants.lastMessageRead')
           .populate({
             path: 'lastMessage',
             populate: {
               path: 'sender',
             },
           });
+
+        const populatedConversationObject = populatedConversation.toJSON();
+
+        await Promise.all(
+          populatedConversationObject.participants.map(async (participant) => {
+            const query = {
+              conversation: populatedConversationObject.id,
+            };
+  
+            // Only filter by lastMessageRead if it exists
+            if (participant.lastMessageRead?.id) {
+              query._id = { $gt: participant.lastMessageRead.id };
+            }
+  
+            participant.unreadCount = await Message.countDocuments(query);
+          })
+        );
         savedConversation.participants.forEach((p) => {
-          io.to(p.userId.toString()).emit('receiveMessage', { receivingConversation: populatedConversation }) 
+          io.to(p.userId.toString()).emit('receiveMessage', { receivingConversation: populatedConversationObject }) 
         });
       } catch(error) {
         return socket.emit('error', { error: error.message });
