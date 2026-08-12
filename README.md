@@ -22,7 +22,7 @@ Checkout the current build on https://bantertracker.onrender.com/
 * **Backend:** Node.js, Express.js
 * **Database:** MongoDB with Mongoose
 * **Real-time communication:** Socket.IO
-* **Authentication:** Implemented
+* **Authentication:** JSON Web Tokens
 
 ## Features
 
