@@ -20,9 +20,9 @@ Users can securely authenticate and access their account and conversations.
 
 ### Real-Time Messaging
 
-Users can send and receive messages in real time using Socket.IO.
+Users can sendand receive messages in real time using Socket.IO.
 
-*[Image/Video: Messaging interface]*
+[Watch Demo](https://github.com/TanishKhatri/BanterTracker/blob/main/README%20Assets/BanterTracker.mp4)
 
 ### Real-Time Unread Messages
 
