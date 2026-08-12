@@ -4,6 +4,7 @@ import { Routes, Route, Link, useNavigate } from 'react-router';
 import { SocketProvider } from './components/SocketProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginForm from './components/LoginForm';
+import SignupForm from './components/SignupForm';
 import MainAppPage from './components/MainAppPage';
 import './app.css'
 
@@ -18,6 +19,7 @@ const App = () => {
     }}>
       <Routes>
         <Route path="/login" element={<LoginForm />} />
+        <Route path="/signup" element={<SignupForm />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={
             <SocketProvider>

@@ -23,7 +23,7 @@ const messageSchema = new mongoose.Schema(
   }
 );
 
-messageSchema.index({ conversation: 1, createdAt: 1 });
+messageSchema.index({ conversation: 1, createdAt: -1, _id: -1 });
 
 messageSchema.set('toJSON', {
   transform: (doc, obj) => {

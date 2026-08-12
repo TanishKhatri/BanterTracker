@@ -26,4 +26,9 @@ const getMessages = async (conversationId) => {
   return response.data;
 }
 
-export default { setToken, login, getConversations, getMessages };
+const signup = async (userObj) => {
+  const response = await axios.post(`${baseURL}/users`, userObj);
+  return response.data;
+}
+
+export default { setToken, login, getConversations, getMessages, signup };

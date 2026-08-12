@@ -30,7 +30,7 @@ const MainAppPage = () => {
   const handleMessageLoad = useCallback(async (convoId) => {
     try {
       const newMessages = await services.getMessages(convoId);
-      setMessages(newMessages);
+      setMessages(newMessages.messages);
     } catch {
       console.log('Messages failed to load');
     }
@@ -115,7 +115,6 @@ const MainAppPage = () => {
     handleMessageLoad(selectedConversationId);
   }, [selectedConversationId]);
 
-  const drawerWidth = 400;
   return (
     <Box
       sx={{

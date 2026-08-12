@@ -191,7 +191,7 @@ mongoose.connect(config.MONGODB_URI, { family: 4 }).then(async () => {
     'Let me know if you have any questions.',
   ];
 
-  const messages = Array.from({ length: 100 }, (_, i) => {
+  const messages = Array.from({ length: 1000 }, (_, i) => {
     const conversation = convoData[i % convoData.length];
 
     return {

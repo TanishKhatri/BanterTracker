@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import User from '../models/user.js';
 import Message from '../models/message.js';
 import middleware from '../utils/middleware.js';
@@ -6,13 +7,22 @@ import Conversation from '../models/conversation.js';
 
 const conversationRouter = express.Router();
 
+//User Extracter middleware is for putting the raw user object from DB into req.user
+
 //Post a conversation provided user is authenticated
 //For group chats
+
+// Do not use for posting 1 on 1 conversations
 conversationRouter.post('/', middleware.userExtractor, async (req, res) => {
   const body = req.body;
   const user = req.user;
   if (!user) {
+    // authenticate
     return res.status(401).json({ error: 'No token specified' });
+  }
+
+  if (body.participants.length <= 2) {
+    return res.status(400).json({ error: 'This route is for group chats only' });
   }
 
   const newConvo = new Conversation({
@@ -24,7 +34,8 @@ conversationRouter.post('/', middleware.userExtractor, async (req, res) => {
   return res.status(201).send(savedConvo);
 });
 
-//Get all conversations that provided user is a participant of
+//Get all conversations that a user is the participant of
+//For loading chats on the sidebar
 conversationRouter.get('/', middleware.userExtractor, async (req, res) => {
   const user = req.user;
   if (!user) {
@@ -40,7 +51,7 @@ conversationRouter.get('/', middleware.userExtractor, async (req, res) => {
         path: 'sender',
       },
     });
-  
+
   const conversationsObject = conversations.map((c) => c.toJSON());
 
   await Promise.all(
@@ -65,7 +76,10 @@ conversationRouter.get('/', middleware.userExtractor, async (req, res) => {
   res.status(200).send({ conversations: conversationsObject });
 });
 
-//Get all messages sent by users in a conversation
+
+const MESSAGE_AMOUNT = 50;
+//Get 50 messages based on a user's query of the lastMessage the user can see
+//If no query is specified we send the latest 50 messages
 conversationRouter.get('/:convoId/messages', middleware.userExtractor, async (req, res) => {
   const user = req.user;
   if (!user) {
@@ -73,6 +87,8 @@ conversationRouter.get('/:convoId/messages', middleware.userExtractor, async (re
   }
 
   const { convoId } = req.params;
+  const { beforeCreatedAt, beforeId } = req.query;
+
   const conversationSearched = await Conversation.findById(convoId);
   if (!conversationSearched) {
     return res.status(400).json({ error: 'provided conversation does not exist' });
@@ -82,8 +98,66 @@ conversationRouter.get('/:convoId/messages', middleware.userExtractor, async (re
     return res.status(401).json('User does not have the permission to access these messages');
   }
 
-  const messages = await Message.find({ conversation: convoId }).populate('sender');
-  return res.status(200).send(messages);
+  const match = {
+    conversation: new mongoose.Types.ObjectId(convoId)
+  }
+
+  if (beforeCreatedAt && beforeId) {
+    const beforeCreatedAtDate = new Date(beforeCreatedAt);
+    if (isNaN(beforeCreatedAtDate)) {
+      return res.status(400).json({ error: 'createdAt is malformed'});
+    }
+
+    if (!mongoose.isValidObjectId(beforeId)) {
+      return res.status(400).json({
+        error: 'id is malformed'
+      });
+    } 
+
+    match.$or = [
+      { createdAt: { $lt: beforeCreatedAt } },
+      {
+        createdAt: beforeCreatedAt,
+        _id: { $lt: new mongoose.Types.ObjectId(beforeId) }
+      }
+    ]
+  }
+
+  const messages = await Message.aggregate([
+    {
+      $match: match
+    },
+    {
+      $sort: {
+        createdAt: -1,
+        _id: -1
+      }
+    },
+    {
+      $limit: MESSAGE_AMOUNT,
+    }, 
+    {
+      $sort: {
+        createdAt: 1,
+        _id: 1
+      }
+    }
+  ])
+
+  const messageDocuments = messages.map((message) =>
+    Message.hydrate(message)
+  );
+
+  await Message.populate(messageDocuments, {
+    path: 'sender'
+  })
+
+  const oldest = messageDocuments[0];
+
+  return res.status(200).json({
+    messages: messageDocuments,
+    nextCursor: oldest ? { createdAt: oldest.createdAt, id: oldest._id } : null
+  });
 });
 
 export default conversationRouter;

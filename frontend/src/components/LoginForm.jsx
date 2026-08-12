@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from './AuthContext';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
+import SignupForm from './SignupForm';
 import services from '../services/services';
 
 const LoginForm = ({ handleLogin }) => {
@@ -21,6 +22,10 @@ const LoginForm = ({ handleLogin }) => {
       console.log('error occured');
     }
   };
+
+  const signupEvent = () => {
+    navigate('/signup');
+  }
 
   return (
     <Paper
@@ -57,7 +62,13 @@ const LoginForm = ({ handleLogin }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         ></TextField>
-        <Button type='submit' variant='contained'>Submit</Button>
+        <Box sx={{
+          display: 'flex',
+          gap: 2
+        }}>
+          <Button type='submit' variant='contained'>login</Button>
+          <Button variant='contained' onClick={signupEvent}>signup</Button>
+        </Box>
       </Box>
     </Paper>
   );

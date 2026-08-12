@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import {
   Box,
   AppBar,
@@ -22,29 +22,48 @@ const MessageBox = ({ drawerWidth, messages, convoObj }) => {
   const unreadMessages = useRef(new Set());
 
   const getAllUnreadMessages = useCallback(() => {
-    const lastMessageReadDate = new Date(convoObj.participants.find((p) => p.userId.id === user.id).lastMessageRead);
+    const lastMessageReadDate = new Date(
+      convoObj.participants.find((p) => p.userId.id === user.id).lastMessageRead
+    );
     messages.forEach((m) => {
       const messageDate = new Date(m.createdAt);
       if (messageDate > lastMessageReadDate) {
-        unreadMessages.add(m.id);
+        unreadMessages.current.add(m.id);
       }
-    })
-  }, [messages, convoObj])
+    });
+  }, [messages, convoObj]);
 
   const bottomRef = useRef(null);
+  const boxHasBeenScrolled = useRef(null);
+  const waitingForMessageSend = useRef(false);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: 'auto',
+  useLayoutEffect(() => {
+    if (!convoObj?.id || !messages?.length) return;
+
+    if (waitingForMessageSend.current) {
+      waitingForMessageSend.current = false;
+      requestAnimationFrame(() => {
+        bottomRef.current?.scrollIntoView({
+          behavior: 'auto',
+        });
+      });
+      return;
+    }
+
+    if (boxHasBeenScrolled.current === convoObj.id) return;
+    boxHasBeenScrolled.current = convoObj.id;
+
+    requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({
+        behavior: 'auto',
+      });
     });
-  }, [convoObj?.id]);
+  }, [convoObj?.id, messages]);
 
   const socket = useSocket();
   const handleMessageSending = (msg) => {
     socket.emit('sendMessage', { message: msg, convoId: convoObj.id });
-    bottomRef.current?.scrollIntoView({
-      behavior: 'auto',
-    });
+    waitingForMessageSend.current = true;
   };
 
   useEffect(() => {
@@ -53,10 +72,6 @@ const MessageBox = ({ drawerWidth, messages, convoObj }) => {
   }, [messages]);
 
   const { logout } = useAuth();
-
-  if (!convoObj) {
-    return null;
-  }
 
   return (
     <Box
@@ -72,60 +87,65 @@ const MessageBox = ({ drawerWidth, messages, convoObj }) => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {convoObj.title}
+            {convoObj && convoObj.title}
+            {!convoObj && 'Choose a chat'}
           </Typography>
           <Button onClick={logout} color="white">
             logout
           </Button>
         </Toolbar>
       </AppBar>
-      <Stack
-        spacing={2}
-        sx={{
-          flex: '1 1 auto', // take remaining space under AppBar
-          minHeight: 0,
-          overflowY: 'auto',
-          p: 4,
-        }}
-      >
-        {messages &&
-          messages.map((m, i) => {
-            const currentDate = new Date(m.createdAt).toLocaleDateString('en-GB', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            });
+      {convoObj && (
+        <>
+          <Stack
+            spacing={2}
+            sx={{
+              flex: '1 1 auto', // take remaining space under AppBar
+              minHeight: 0,
+              overflowY: 'auto',
+              p: 4,
+            }}
+          >
+            {messages &&
+              messages.map((m, i) => {
+                const currentDate = new Date(m.createdAt).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                });
 
-            const previousDate =
-              i > 0
-                ? new Date(messages[i - 1].createdAt).toLocaleDateString('en-GB', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })
-                : null;
+                const previousDate =
+                  i > 0
+                    ? new Date(messages[i - 1].createdAt).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : null;
 
-            const showDivider = i === 0 || currentDate !== previousDate;
-            return (
-              <Box
-                key={m.id}
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              >
-                {showDivider && (
-                  <Divider>
-                    <Chip label={currentDate} size="small" />
-                  </Divider>
-                )}
-                <Message messageObj={m} />
-              </Box>
-            );
-          })}
-        <Box ref={bottomRef}></Box>
-      </Stack>
-      <SendMessage handleMessageSending={handleMessageSending} />
+                const showDivider = i === 0 || currentDate !== previousDate;
+                return (
+                  <Box
+                    key={m.id}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {showDivider && (
+                      <Divider>
+                        <Chip label={currentDate} size="small" />
+                      </Divider>
+                    )}
+                    <Message messageObj={m} />
+                  </Box>
+                );
+              })}
+            <Box ref={bottomRef}></Box>
+          </Stack>
+          <SendMessage handleMessageSending={handleMessageSending} />
+        </>
+      )}
     </Box>
   );
 };
